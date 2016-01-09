@@ -1,0 +1,21 @@
+language: go
+
+go:
+  - 1.4
+  - 1.5
+  - tip
+
+before_script:
+  - go get -u github.com/golang/lint/golint
+  - go get -u github.com/axw/gocov/gocov
+  - go get -u github.com/mattn/goveralls
+  - if ! go get github.com/golang/tools/cmd/cover; then go get golang.org/x/tools/cmd/cover; fi
+
+script:
+  - go test -v --race ./...
+  - goveralls -service=travis-ci -repotoken $COVERALLS_TOKEN
+
+after_script:
+  - test -z "$(gofmt -s -l -w . | tee /dev/stderr)"
+  - test -z "$(golint ./... | tee /dev/stderr)"
+  - go vet ./...
