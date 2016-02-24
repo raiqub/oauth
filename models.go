@@ -17,8 +17,10 @@
 package oauth
 
 type (
+	// A ClientEntry represents a record for client credentials and
+	// authorizations.
 	ClientEntry struct {
-		ClientId          string   `bson:"_id" json:"client_id"`
+		ClientID          string   `bson:"_id" json:"client_id"`
 		ClientSecret      string   `bson:"secret" json:"client_secret,omitempty"`
 		ClientType        string   `bson:"type" json:"client_type"`
 		RedirectUris      []string `bson:"redirs" json:"redirect_uris"`

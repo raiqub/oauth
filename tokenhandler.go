@@ -24,16 +24,29 @@ import (
 )
 
 const (
-	GrantTypeClient   = "client_credentials"
-	GrantTypeCode     = "authorization_code"
+	// GrantTypeClient defines the code for Client Credentials Grant
+	// authentication.
+	GrantTypeClient = "client_credentials"
+
+	// GrantTypeCode defines the code for Authorization Code Grant
+	// authentication.
+	GrantTypeCode = "authorization_code"
+
+	// GrantTypePassword defines the code for Resource Owner Password
+	// Credentials Grant authentication.
 	GrantTypePassword = "password"
-	GrantTypeRefresh  = "refresh_token"
+
+	// GrantTypeRefresh defines the code for Refresh Access Token
+	// authentication.
+	GrantTypeRefresh = "refresh_token"
 )
 
+// A TokenHandler provides handling of token endpoint on Auth 2.0 server.
 type TokenHandler struct {
 	prov TokenProvider
 }
 
+// NewTokenHandler creates a new instance of TokenHandler.
 func NewTokenHandler(model TokenProvider) *TokenHandler {
 	return &TokenHandler{model}
 }
@@ -41,20 +54,20 @@ func NewTokenHandler(model TokenProvider) *TokenHandler {
 func (h *TokenHandler) authClient(
 	c *TokenContext,
 	grant string,
-) (*ClientEntry, *OAuthError) {
+) (*ClientEntry, *Error) {
 	// Get client credentials
-	client_id, client_secret, ok := c.Request.BasicAuth()
+	clientID, clientSecret, ok := c.Request.BasicAuth()
 	if !ok {
-		jerr := NewOAuthError().
+		jerr := NewError().
 			MissingClientCredentials().
 			Build()
 		return nil, &jerr
 	}
 
 	// Validate client credentials
-	result := h.prov.Client(client_id, client_secret)
+	result := h.prov.Client(clientID, clientSecret)
 	if result == nil {
-		jerr := NewOAuthError().
+		jerr := NewError().
 			InvalidClientCredentials().
 			Build()
 		return nil, &jerr
@@ -64,7 +77,7 @@ func (h *TokenHandler) authClient(
 	if !dot.
 		StringSlice(result.AllowedScopes).
 		ExistsAll(c.ScopeList(), false) {
-		jerr := NewOAuthError().
+		jerr := NewError().
 			InvalidScope().
 			Build()
 		return nil, &jerr
@@ -74,7 +87,7 @@ func (h *TokenHandler) authClient(
 	if !dot.
 		StringSlice(c.Client.AllowedGrants).
 		Exists(grant, false) {
-		jerr := NewOAuthError().
+		jerr := NewError().
 			UnauthorizedClient().
 			Build()
 		return nil, &jerr
@@ -84,7 +97,7 @@ func (h *TokenHandler) authClient(
 }
 
 func (h *TokenHandler) clientHandler(c *TokenContext) {
-	var jerr *OAuthError
+	var jerr *Error
 	c.Client, jerr = h.authClient(c, GrantTypeClient)
 	if jerr != nil {
 		c.JSON(jerr.Status, jerr)
@@ -100,25 +113,25 @@ func (h *TokenHandler) clientHandler(c *TokenContext) {
 	c.JSON(http.StatusOK, response)
 }
 
-func (s *TokenHandler) passwordHandler(c *TokenContext) {
-	var jerr *OAuthError
-	c.Client, jerr = s.authClient(c, GrantTypePassword)
+func (h *TokenHandler) passwordHandler(c *TokenContext) {
+	var jerr *Error
+	c.Client, jerr = h.authClient(c, GrantTypePassword)
 	if jerr != nil {
 		c.JSON(jerr.Status, jerr)
 		return
 	}
 
 	// Validates user (resource owner) credentials
-	if !s.prov.User(c.Username, c.Password) {
-		jerr := NewOAuthError().
-			InvalidUserCredential(c.Username).
+	if !h.prov.User(c.Username, c.Password) {
+		jerr := NewError().
+			InvalidUserCredentials(c.Username).
 			Build()
 		c.JSON(jerr.Status, jerr)
 		return
 	}
 
 	// Request a new access token
-	response := s.prov.AccessToken(c)
+	response := h.prov.AccessToken(c)
 	response.State = c.State
 
 	// Disables HTTP caching on client and returns access token for client
@@ -127,7 +140,7 @@ func (s *TokenHandler) passwordHandler(c *TokenContext) {
 }
 
 func (h *TokenHandler) refreshHandler(c *TokenContext) {
-	var jerr *OAuthError
+	var jerr *Error
 	c.Client, jerr = h.authClient(c, GrantTypeRefresh)
 	if jerr != nil {
 		c.JSON(jerr.Status, jerr)
@@ -136,7 +149,7 @@ func (h *TokenHandler) refreshHandler(c *TokenContext) {
 
 	// Validates refresh token
 	if !h.prov.Refresh(c) {
-		jerr := NewOAuthError().
+		jerr := NewError().
 			InvalidRefreshToken().
 			Build()
 		c.JSON(jerr.Status, jerr)
@@ -152,14 +165,15 @@ func (h *TokenHandler) refreshHandler(c *TokenContext) {
 	c.JSON(http.StatusOK, response)
 }
 
-func (s *TokenHandler) AccessTokenRequest(c *gin.Context) {
+// AccessTokenRequest receives a request to token endpoint.
+func (h *TokenHandler) AccessTokenRequest(c *gin.Context) {
 	context := NewTokenContext(c)
 
 	// Determine whether requested grant type is supported
 	if !dot.
-		StringSlice(s.prov.SupportedGrantTypes()).
+		StringSlice(h.prov.SupportedGrantTypes()).
 		Exists(context.GrantType, false) {
-		jerr := NewOAuthError().
+		jerr := NewError().
 			UnsupportedGrantType().
 			Build()
 		c.JSON(jerr.Status, jerr)
@@ -169,19 +183,15 @@ func (s *TokenHandler) AccessTokenRequest(c *gin.Context) {
 	// Route requested grant type to its handler
 	switch context.GrantType {
 	case GrantTypeClient:
-		s.clientHandler(context)
+		h.clientHandler(context)
 	case GrantTypePassword:
-		s.passwordHandler(context)
+		h.passwordHandler(context)
 	case GrantTypeRefresh:
-		s.refreshHandler(context)
+		h.refreshHandler(context)
 	default:
-		jerr := NewOAuthError().
+		jerr := NewError().
 			UnsupportedGrantType().
 			Build()
 		c.JSON(jerr.Status, jerr)
 	}
-}
-
-func (s *TokenHandler) SetRoutes(router gin.RouterGroup) {
-	router.POST("/token", s.AccessTokenRequest)
 }

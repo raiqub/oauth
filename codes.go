@@ -3,15 +3,30 @@ package oauth
 import "net/http"
 
 const (
+	// RFC6749ErrorResponseURI defines URI for documentation of error responses
+	// from Auth 2.0 documentation.
 	RFC6749ErrorResponseURI = "http://tools.ietf.org/html/rfc6749#section-5.2"
-)
 
-const (
-	CodeInvalidClient        = "invalid_client"
-	CodeInvalidGrant         = "invalid_grant"
-	CodeInvalidRequest       = "invalid_request"
-	CodeInvalidScope         = "invalid_scope"
-	CodeUnauthorizedClient   = "unauthorized_client"
+	// CodeInvalidClient defines error code when client authentication failed.
+	CodeInvalidClient = "invalid_client"
+
+	// CodeInvalidGrant defines error code when provided authorization grant or
+	// refresh token is invalid.
+	CodeInvalidGrant = "invalid_grant"
+
+	// CodeInvalidRequest defines error code when the request has any error on
+	// parameter or is malformed.
+	CodeInvalidRequest = "invalid_request"
+
+	// CodeInvalidScope defines error code when has any error related to scope.
+	CodeInvalidScope = "invalid_scope"
+
+	// CodeUnauthorizedClient defines error code when authenticated client lacks
+	// authorization.
+	CodeUnauthorizedClient = "unauthorized_client"
+
+	// CodeUnsupportedGrantType defines error code when the authorization grant
+	// type is not supported.
 	CodeUnsupportedGrantType = "unsupported_grant_type"
 )
 
@@ -45,10 +60,12 @@ var codeStatus = map[string]int{
 	CodeUnsupportedGrantType: http.StatusBadRequest,
 }
 
+// ErrorDescription returns an error description for error code.
 func ErrorDescription(code string) string {
 	return description[code]
 }
 
+// ErrorStatus returns a HTTP status code for error code.
 func ErrorStatus(code string) int {
 	return codeStatus[code]
 }

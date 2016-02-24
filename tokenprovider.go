@@ -23,7 +23,7 @@ type TokenProvider interface {
 	AccessToken(c *TokenContext) *TokenResponse
 
 	// Client gets the client information if valid.
-	Client(client_id, client_secret string) *ClientEntry
+	Client(clientID, clientSecret string) *ClientEntry
 
 	// Refresh validate provided refresh token.
 	Refresh(c *TokenContext) bool

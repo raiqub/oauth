@@ -18,15 +18,16 @@ package oauth
 
 import "fmt"
 
-type OAuthError struct {
+// An Error represents an OAuth 2.0 error response.
+type Error struct {
 	Code        string `json:"error"`
 	Description string `json:"error_description,omitempty"`
-	Uri         string `json:"error_uri,omitempty"`
+	URI         string `json:"error_uri,omitempty"`
 
 	// HTTP status code.
 	Status int `json:"-"`
 }
 
-func (e OAuthError) Error() string {
+func (e Error) Error() string {
 	return fmt.Sprintf("%s: %s", e.Code, e.Description)
 }
