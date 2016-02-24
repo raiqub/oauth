@@ -16,9 +16,9 @@
 
 package oauth
 
-// A TokenProvider is the interface implemented by an object that provides
-// client validation and token creation.
-type TokenProvider interface {
+// A TokenConfig is the interface implemented by an object that provides
+// configuration for token controller.
+type TokenConfig interface {
 	// AccessToken creates and returns a new access token.
 	AccessToken(c *TokenContext) *TokenResponse
 
@@ -33,14 +33,4 @@ type TokenProvider interface {
 
 	// User validate resource owner credentials for password grant type.
 	User(username, password string) bool
-}
-
-// A TokenResponse represents a OAuth response that carry a new access token.
-type TokenResponse struct {
-	AccessToken  string `json:"access_token"`
-	TokenType    string `json:"token_type"`
-	ExpiresIn    int    `json:"expires_in,omitempty"`
-	RefreshToken string `json:"refresh_token,omitempty"`
-	Scope        string `json:"scope,omitempty"`
-	State        string `json:"state,omitempty"`
 }

@@ -41,17 +41,17 @@ const (
 	GrantTypeRefresh = "refresh_token"
 )
 
-// A TokenHandler provides handling of token endpoint on Auth 2.0 server.
-type TokenHandler struct {
-	prov TokenProvider
+// A TokenController provides handling of token endpoint on Auth 2.0 server.
+type TokenController struct {
+	config TokenConfig
 }
 
-// NewTokenHandler creates a new instance of TokenHandler.
-func NewTokenHandler(model TokenProvider) *TokenHandler {
-	return &TokenHandler{model}
+// NewTokenController creates a new instance of TokenController.
+func NewTokenController(config TokenConfig) *TokenController {
+	return &TokenController{config}
 }
 
-func (h *TokenHandler) authClient(
+func (ctrl *TokenController) authClient(
 	c *TokenContext,
 	grant string,
 ) (*ClientEntry, *Error) {
@@ -65,7 +65,7 @@ func (h *TokenHandler) authClient(
 	}
 
 	// Validate client credentials
-	result := h.prov.Client(clientID, clientSecret)
+	result := ctrl.config.Client(clientID, clientSecret)
 	if result == nil {
 		jerr := NewError().
 			InvalidClientCredentials().
@@ -96,16 +96,16 @@ func (h *TokenHandler) authClient(
 	return result, nil
 }
 
-func (h *TokenHandler) clientHandler(c *TokenContext) {
+func (ctrl *TokenController) clientHandler(c *TokenContext) {
 	var jerr *Error
-	c.Client, jerr = h.authClient(c, GrantTypeClient)
+	c.Client, jerr = ctrl.authClient(c, GrantTypeClient)
 	if jerr != nil {
 		c.JSON(jerr.Status, jerr)
 		return
 	}
 
 	// Request a new access token
-	response := h.prov.AccessToken(c)
+	response := ctrl.config.AccessToken(c)
 	response.State = c.State
 
 	// Disables HTTP caching on client and returns access token for client
@@ -113,16 +113,16 @@ func (h *TokenHandler) clientHandler(c *TokenContext) {
 	c.JSON(http.StatusOK, response)
 }
 
-func (h *TokenHandler) passwordHandler(c *TokenContext) {
+func (ctrl *TokenController) passwordHandler(c *TokenContext) {
 	var jerr *Error
-	c.Client, jerr = h.authClient(c, GrantTypePassword)
+	c.Client, jerr = ctrl.authClient(c, GrantTypePassword)
 	if jerr != nil {
 		c.JSON(jerr.Status, jerr)
 		return
 	}
 
 	// Validates user (resource owner) credentials
-	if !h.prov.User(c.Username, c.Password) {
+	if !ctrl.config.User(c.Username, c.Password) {
 		jerr := NewError().
 			InvalidUserCredentials(c.Username).
 			Build()
@@ -131,7 +131,7 @@ func (h *TokenHandler) passwordHandler(c *TokenContext) {
 	}
 
 	// Request a new access token
-	response := h.prov.AccessToken(c)
+	response := ctrl.config.AccessToken(c)
 	response.State = c.State
 
 	// Disables HTTP caching on client and returns access token for client
@@ -139,16 +139,16 @@ func (h *TokenHandler) passwordHandler(c *TokenContext) {
 	c.JSON(http.StatusOK, response)
 }
 
-func (h *TokenHandler) refreshHandler(c *TokenContext) {
+func (ctrl *TokenController) refreshHandler(c *TokenContext) {
 	var jerr *Error
-	c.Client, jerr = h.authClient(c, GrantTypeRefresh)
+	c.Client, jerr = ctrl.authClient(c, GrantTypeRefresh)
 	if jerr != nil {
 		c.JSON(jerr.Status, jerr)
 		return
 	}
 
 	// Validates refresh token
-	if !h.prov.Refresh(c) {
+	if !ctrl.config.Refresh(c) {
 		jerr := NewError().
 			InvalidRefreshToken().
 			Build()
@@ -157,7 +157,7 @@ func (h *TokenHandler) refreshHandler(c *TokenContext) {
 	}
 
 	// Request a new access token
-	response := h.prov.AccessToken(c)
+	response := ctrl.config.AccessToken(c)
 	response.State = c.State
 
 	// Disables HTTP caching on client and returns access token for client
@@ -166,12 +166,12 @@ func (h *TokenHandler) refreshHandler(c *TokenContext) {
 }
 
 // AccessTokenRequest receives a request to token endpoint.
-func (h *TokenHandler) AccessTokenRequest(c *gin.Context) {
+func (ctrl *TokenController) AccessTokenRequest(c *gin.Context) {
 	context := NewTokenContext(c)
 
 	// Determine whether requested grant type is supported
 	if !dot.
-		StringSlice(h.prov.SupportedGrantTypes()).
+		StringSlice(ctrl.config.SupportedGrantTypes()).
 		Exists(context.GrantType, false) {
 		jerr := NewError().
 			UnsupportedGrantType().
@@ -183,11 +183,11 @@ func (h *TokenHandler) AccessTokenRequest(c *gin.Context) {
 	// Route requested grant type to its handler
 	switch context.GrantType {
 	case GrantTypeClient:
-		h.clientHandler(context)
+		ctrl.clientHandler(context)
 	case GrantTypePassword:
-		h.passwordHandler(context)
+		ctrl.passwordHandler(context)
 	case GrantTypeRefresh:
-		h.refreshHandler(context)
+		ctrl.refreshHandler(context)
 	default:
 		jerr := NewError().
 			UnsupportedGrantType().

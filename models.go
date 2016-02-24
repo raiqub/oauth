@@ -28,4 +28,14 @@ type (
 		AllowedGrants     []string `bson:"grants" json:"allowed_grants"`
 		AllowedScopes     []string `bson:"scopes" json:"allowed_scopes"`
 	}
+
+	// A TokenResponse represents a OAuth response that carry a new access token.
+	TokenResponse struct {
+		AccessToken  string `json:"access_token"`
+		TokenType    string `json:"token_type"`
+		ExpiresIn    int    `json:"expires_in,omitempty"`
+		RefreshToken string `json:"refresh_token,omitempty"`
+		Scope        string `json:"scope,omitempty"`
+		State        string `json:"state,omitempty"`
+	}
 )
