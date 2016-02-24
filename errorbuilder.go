@@ -16,15 +16,20 @@
 
 package oauth
 
-import "net/http"
+import (
+	"fmt"
+)
 
 type OAuthErrorBuilder interface {
 	Build() OAuthError
 	InvalidRequest() OAuthErrorBuilder
 	InvalidClient() OAuthErrorBuilder
+	InvalidClientCredentials() OAuthErrorBuilder
 	InvalidGrant() OAuthErrorBuilder
+	InvalidRefreshToken() OAuthErrorBuilder
 	InvalidScope() OAuthErrorBuilder
-	SetError(error) OAuthErrorBuilder
+	InvalidUserCredential(username string) OAuthErrorBuilder
+	MissingClientCredentials() OAuthErrorBuilder
 	SetDescription(string) OAuthErrorBuilder
 	SetStatus(int) OAuthErrorBuilder
 	SetUri(string) OAuthErrorBuilder
@@ -44,77 +49,69 @@ func (b *oAuthErrorBuilder) Build() OAuthError {
 	return b.OAuthError
 }
 
-func (b *oAuthErrorBuilder) InvalidRequest() OAuthErrorBuilder {
-	result := OAuthError{
-		"invalid_request",
-		"The request is missing a required parameter, includes an " +
-			"unsupported parameter value (other than grant type), " +
-			"repeats a parameter, includes multiple credentials, " +
-			"utilizes more than one mechanism for authenticating the " +
-			"client, or is otherwise malformed.",
-		RFC_6749_ERROR_RESPONSE_URI,
-		http.StatusBadRequest,
-	}
-	b.setCode(result)
+func (b *oAuthErrorBuilder) InvalidClient() OAuthErrorBuilder {
+	b.setCode(CodeInvalidClient)
 	return b
 }
 
-func (b *oAuthErrorBuilder) InvalidClient() OAuthErrorBuilder {
-	result := OAuthError{
-		"invalid_client",
-		"Client authentication failed (e.g., unknown client, no " +
-			"client authentication included, or unsupported " +
-			"authentication method).",
-		RFC_6749_ERROR_RESPONSE_URI,
-		http.StatusUnauthorized,
-	}
-	b.setCode(result)
+func (b *oAuthErrorBuilder) InvalidClientCredentials() OAuthErrorBuilder {
+	b.Code = CodeInvalidClient
+	b.Description = "Client authentication failed"
+	b.Status = codeStatus[CodeInvalidClient]
+
 	return b
 }
 
 func (b *oAuthErrorBuilder) InvalidGrant() OAuthErrorBuilder {
-	result := OAuthError{
-		"invalid_grant",
-		"The provided authorization grant (e.g., authorization " +
-			"code, resource owner credentials) or refresh token is " +
-			"invalid, expired, revoked, does not match the redirection " +
-			"URI used in the authorization request, or was issued to " +
-			"another client.",
-		RFC_6749_ERROR_RESPONSE_URI,
-		http.StatusBadRequest,
-	}
-	b.setCode(result)
+	b.setCode(CodeInvalidGrant)
+	return b
+}
+
+func (b *oAuthErrorBuilder) InvalidRefreshToken() OAuthErrorBuilder {
+	b.Code = CodeInvalidGrant
+	b.Description = "The refresh token is invalid, expired, revoked, does " +
+		"not match the redirection URI used in the authorization request, or " +
+		"was issued to another client"
+	b.Status = codeStatus[CodeInvalidGrant]
+
+	return b
+}
+
+func (b *oAuthErrorBuilder) InvalidRequest() OAuthErrorBuilder {
+	b.setCode(CodeInvalidRequest)
 	return b
 }
 
 func (b *oAuthErrorBuilder) InvalidScope() OAuthErrorBuilder {
-	result := OAuthError{
-		"invalid_scope",
-		"The requested scope is invalid, unknown, malformed, or " +
-			"exceeds the scope granted by the resource owner.",
-		RFC_6749_ERROR_RESPONSE_URI,
-		http.StatusBadRequest,
-	}
-	b.setCode(result)
+	b.setCode(CodeInvalidScope)
 	return b
 }
 
-func (b *oAuthErrorBuilder) setCode(err OAuthError) {
-	b.Code = err.Code
+func (b *oAuthErrorBuilder) InvalidUserCredential(username string) OAuthErrorBuilder {
+	b.Code = CodeInvalidGrant
+	b.Description = fmt.Sprintf("Invalid credential for '%s'", username)
+	b.Status = codeStatus[CodeInvalidGrant]
+
+	return b
+}
+
+func (b *oAuthErrorBuilder) MissingClientCredentials() OAuthErrorBuilder {
+	b.Code = CodeInvalidClient
+	b.Description =
+		"The client must authenticate but no credentials are provided"
+	b.Status = codeStatus[CodeInvalidClient]
+
+	return b
+}
+
+func (b *oAuthErrorBuilder) setCode(code string) {
+	b.Code = code
 	if len(b.Description) == 0 {
-		b.Description = err.Description
-	}
-	if len(b.Uri) == 0 {
-		b.Uri = err.Uri
+		b.Description = description[code]
 	}
 	if b.Status == 0 {
-		b.Status = err.Status
+		b.Status = codeStatus[code]
 	}
-}
-
-func (b *oAuthErrorBuilder) SetError(err error) OAuthErrorBuilder {
-	b.Description = err.Error()
-	return b
 }
 
 func (b *oAuthErrorBuilder) SetDescription(desc string) OAuthErrorBuilder {
@@ -133,25 +130,11 @@ func (b *oAuthErrorBuilder) SetUri(uri string) OAuthErrorBuilder {
 }
 
 func (b *oAuthErrorBuilder) UnauthorizedClient() OAuthErrorBuilder {
-	result := OAuthError{
-		"unauthorized_client",
-		"The authenticated client is not authorized to use this " +
-			"authorization grant type.",
-		RFC_6749_ERROR_RESPONSE_URI,
-		http.StatusBadRequest,
-	}
-	b.setCode(result)
+	b.setCode(CodeUnauthorizedClient)
 	return b
 }
 
 func (b *oAuthErrorBuilder) UnsupportedGrantType() OAuthErrorBuilder {
-	result := OAuthError{
-		"unsupported_grant_type",
-		"The authorization grant type is not supported by the " +
-			"authorization server.",
-		RFC_6749_ERROR_RESPONSE_URI,
-		http.StatusBadRequest,
-	}
-	b.setCode(result)
+	b.setCode(CodeUnsupportedGrantType)
 	return b
 }

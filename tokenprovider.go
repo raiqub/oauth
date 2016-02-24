@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Fabrício Godoy
+ * Copyright 2016 Fabrício Godoy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,45 +16,26 @@
 
 package oauth
 
-import (
-	"strings"
-
-	"github.com/gin-gonic/gin"
-)
-
-type TokenContext struct {
-	*gin.Context
-	GrantType string
-	Client    *ClientEntry
-	Scope     string
-	State     string
-	Username  string
-	Password  string
-}
-
-func NewTokenContext(c *gin.Context) *TokenContext {
-	return &TokenContext{
-		c,
-		c.PostForm("grant_type"),
-		nil,
-		c.PostForm("scope"),
-		c.PostForm("state"),
-		c.PostForm("username"),
-		c.PostForm("password"),
-	}
-}
-
-func (s TokenContext) ScopeList() []string {
-	return strings.Split(s.Scope, " ")
-}
-
-type TokenModel interface {
+// A TokenProvider is the interface implemented by an object that provides
+// client validation and token creation.
+type TokenProvider interface {
+	// AccessToken creates and returns a new access token.
 	AccessToken(c *TokenContext) *TokenResponse
+
+	// Client gets the client information if valid.
 	Client(client_id, client_secret string) *ClientEntry
+
+	// Refresh validate provided refresh token.
+	Refresh(c *TokenContext) bool
+
+	// SupportedGrantTypes gets a list of supported grant types.
 	SupportedGrantTypes() []string
+
+	// User validate resource owner credentials for password grant type.
 	User(username, password string) bool
 }
 
+// A TokenResponse represents a OAuth response that carry a new access token.
 type TokenResponse struct {
 	AccessToken  string `json:"access_token"`
 	TokenType    string `json:"token_type"`

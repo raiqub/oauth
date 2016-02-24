@@ -18,22 +18,6 @@ package oauth
 
 import "fmt"
 
-const (
-	RFC_6749_ERROR_RESPONSE_URI = "http://tools.ietf.org/html/rfc6749#section-5.2"
-)
-
-type InvalidCredential string
-
-func (e InvalidCredential) Error() string {
-	return fmt.Sprintf("Invalid credential for '%s'", string(e))
-}
-
-type MissingClientId int
-
-func (e MissingClientId) Error() string {
-	return fmt.Sprint("The client_id must be specified")
-}
-
 type OAuthError struct {
 	Code        string `json:"error"`
 	Description string `json:"error_description,omitempty"`
