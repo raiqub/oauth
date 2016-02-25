@@ -48,6 +48,16 @@ type TokenController struct {
 
 // NewTokenController creates a new instance of TokenController.
 func NewTokenController(config TokenConfig) *TokenController {
+	if config.SupportedGrantTypes == nil ||
+		len(config.SupportedGrantTypes) == 0 {
+		config.SupportedGrantTypes = []string{
+			GrantTypeClient,
+			GrantTypeCode,
+			GrantTypePassword,
+			GrantTypeRefresh,
+		}
+	}
+
 	return &TokenController{config}
 }
 
@@ -85,7 +95,7 @@ func (ctrl *TokenController) authClient(
 
 	// Validates whether requested grant type is allowed
 	if !dot.
-		StringSlice(c.Client.AllowedGrants).
+		StringSlice(result.AllowedGrants).
 		Exists(grant, false) {
 		jerr := NewError().
 			UnauthorizedClient().
@@ -168,10 +178,8 @@ func (ctrl *TokenController) refreshHandler(c *TokenContext) {
 // AccessTokenRequest receives a request to token endpoint.
 func (ctrl *TokenController) AccessTokenRequest(c *gin.Context) {
 	context := NewTokenContext(c)
-
-	// Determine whether requested grant type is supported
 	if !dot.
-		StringSlice(ctrl.config.SupportedGrantTypes()).
+		StringSlice(ctrl.config.SupportedGrantTypes).
 		Exists(context.GrantType, false) {
 		jerr := NewError().
 			UnsupportedGrantType().

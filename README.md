@@ -1,7 +1,7 @@
 # oauth
 
 Raiqub/oauth is a library for the [Go Programming Language][go]. It provides
-a OAuth 2.0 implementation.
+an implementation of OAuth 2.0 features.
 
 ## Status
 
@@ -14,8 +14,19 @@ a OAuth 2.0 implementation.
 To install raiqub/oauth library run the following command:
 
 ~~~ bash
-go get github.com/raiqub/oauth
+go get gopkg.in/raiqub/oauth.v0
 ~~~
+
+To import this package, add the following line to your code:
+
+~~~ bash
+import "gopkg.in/raiqub/auth.v0"
+~~~
+
+## License
+
+raiqub/oauth is made available under the [Apache Version 2.0 License][license].
 
 
 [go]: http://golang.org/
+[license]: http://www.apache.org/licenses/LICENSE-2.0

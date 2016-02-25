@@ -16,21 +16,20 @@
 
 package oauth
 
-// A TokenConfig is the interface implemented by an object that provides
-// configuration for token controller.
-type TokenConfig interface {
+// A TokenConfig provides configuration for token controller.
+type TokenConfig struct {
 	// AccessToken creates and returns a new access token.
-	AccessToken(c *TokenContext) *TokenResponse
+	AccessToken func(c *TokenContext) *TokenResponse
 
 	// Client gets the client information if valid.
-	Client(clientID, clientSecret string) *ClientEntry
+	Client func(clientID, clientSecret string) *ClientEntry
 
 	// Refresh validate provided refresh token.
-	Refresh(c *TokenContext) bool
+	Refresh func(c *TokenContext) bool
 
 	// SupportedGrantTypes gets a list of supported grant types.
-	SupportedGrantTypes() []string
+	SupportedGrantTypes []string
 
 	// User validate resource owner credentials for password grant type.
-	User(username, password string) bool
+	User func(username, password string) bool
 }

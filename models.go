@@ -39,3 +39,22 @@ type (
 		State        string `json:"state,omitempty"`
 	}
 )
+
+// NewTokenResponse creates a new instance of TokenResponse.
+func NewTokenResponse(
+	accessToken string,
+	tokenType string,
+	expiresIn int,
+	refreshToken string,
+	scope string,
+	state string,
+) TokenResponse {
+	return TokenResponse{
+		accessToken,
+		tokenType,
+		expiresIn,
+		refreshToken,
+		scope,
+		state,
+	}
+}
