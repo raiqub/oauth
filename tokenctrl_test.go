@@ -4,25 +4,22 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"gopkg.in/raiqub/dot.v1"
 )
 
 const (
-	AccessToken        = "UB736gpbpFp7hS8dNrUFZ7b6Aw2a3N0LI8RRddWO"
-	ClientID           = "client_id"
-	ClientSecret       = "client_secret"
-	ListenerEndpoint   = "/token"
-	ListenerServerAddr = "localhost:64080"
-	ListenerServerNet  = "tcp"
-	ListenerURL        = "http://localhost:64080" + ListenerEndpoint
-	Scope              = "user.read"
-	WaitTimeout        = time.Millisecond * 250
+	AccessToken      = "UB736gpbpFp7hS8dNrUFZ7b6Aw2a3N0LI8RRddWO"
+	ClientID         = "client_id"
+	ClientSecret     = "client_secret"
+	ListenerEndpoint = "/token"
+	Scope            = "user.read"
+	WaitTimeout      = time.Millisecond * 250
 )
 
 func TestClientGrant(t *testing.T) {
@@ -58,30 +55,19 @@ func TestClientGrant(t *testing.T) {
 
 	controller := NewTokenController(config)
 	gin.SetMode(gin.ReleaseMode)
-	router := gin.Default()
+	router := gin.New()
 	router.RedirectTrailingSlash = true
 
 	router.POST(ListenerEndpoint, controller.AccessTokenRequest)
-	go func() {
-		if err := router.Run(ListenerServerAddr); err != nil {
-			t.Fatalf("Error trying to bind address: %v", err)
-		}
-	}()
-
-	if !dot.WaitPeerListening(
-		ListenerServerNet,
-		ListenerServerAddr,
-		WaitTimeout,
-	) {
-		t.Fatal("Timeout waiting for server for listening")
-	}
+	ts := httptest.NewServer(router)
+	defer ts.Close()
 
 	client := &http.Client{}
 	form := url.Values{
 		"grant_type": []string{GrantTypeClient},
 		"scope":      []string{Scope},
 	}
-	req, _ := http.NewRequest("POST", ListenerURL,
+	req, _ := http.NewRequest("POST", ts.URL+ListenerEndpoint,
 		strings.NewReader(form.Encode()))
 	req.SetBasicAuth(ClientID, ClientSecret)
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
