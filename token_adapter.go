@@ -16,9 +16,20 @@
 
 package oauth
 
-import "net/http"
+// A TokenAdapter provides an adapter for token management.
+type TokenAdapter interface {
+	// AccessToken creates and returns a new access token.
+	AccessToken(c *TokenContext) *TokenResponse
 
-func disableCaching(w http.ResponseWriter) {
-	w.Header().Set("Cache-Control", "no-store")
-	w.Header().Set("Pragma", "no-cache")
+	// Client gets the client information if valid.
+	Client(clientID, clientSecret string) *ClientEntry
+
+	// Refresh validate provided refresh token.
+	Refresh(c *TokenContext) bool
+
+	// SupportedGrantTypes gets a list of supported grant types.
+	SupportedGrantTypes() []string
+
+	// User validate resource owner credentials for password grant type.
+	User(username, password string) bool
 }

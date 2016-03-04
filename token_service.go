@@ -16,12 +16,7 @@
 
 package oauth
 
-import (
-	"net/http"
-
-	"github.com/gin-gonic/gin"
-	"gopkg.in/raiqub/dot.v1"
-)
+import "gopkg.in/raiqub/dot.v1"
 
 const (
 	// GrantTypeClient defines the code for Client Credentials Grant
@@ -41,41 +36,36 @@ const (
 	GrantTypeRefresh = "refresh_token"
 )
 
-// A TokenController provides handling of token endpoint on Auth 2.0 server.
-type TokenController struct {
-	config TokenConfig
+// A TokenService provides token management for Auth 2.0 server.
+type TokenService struct {
+	adapter TokenAdapter
 }
 
-// NewTokenController creates a new instance of TokenController.
-func NewTokenController(config TokenConfig) *TokenController {
-	if config.SupportedGrantTypes == nil ||
-		len(config.SupportedGrantTypes) == 0 {
-		config.SupportedGrantTypes = []string{
-			GrantTypeClient,
-			GrantTypeCode,
-			GrantTypePassword,
-			GrantTypeRefresh,
-		}
+// NewTokenService creates a new instance of TokenService.
+func NewTokenService(ta TokenAdapter) *TokenService {
+	if ta.SupportedGrantTypes() == nil {
+		return nil
 	}
 
-	return &TokenController{config}
+	return &TokenService{ta}
 }
 
-func (ctrl *TokenController) authClient(
+func (svc *TokenService) authClient(
 	c *TokenContext,
 	grant string,
 ) (*ClientEntry, *Error) {
 	// Get client credentials
-	clientID, clientSecret, ok := c.Request.BasicAuth()
-	if !ok {
+	if c.ClientAuth == nil {
 		jerr := NewError().
 			MissingClientCredentials().
 			Build()
 		return nil, &jerr
 	}
+	clientID := c.ClientAuth.Username
+	clientSecret := c.ClientAuth.Password
 
 	// Validate client credentials
-	result := ctrl.config.Client(clientID, clientSecret)
+	result := svc.adapter.Client(clientID, clientSecret)
 	if result == nil {
 		jerr := NewError().
 			InvalidClientCredentials().
@@ -106,100 +96,88 @@ func (ctrl *TokenController) authClient(
 	return result, nil
 }
 
-func (ctrl *TokenController) clientHandler(c *TokenContext) {
+func (svc *TokenService) clientHandler(c *TokenContext,
+) (*TokenResponse, *Error) {
 	var jerr *Error
-	c.Client, jerr = ctrl.authClient(c, GrantTypeClient)
+	c.Client, jerr = svc.authClient(c, GrantTypeClient)
 	if jerr != nil {
-		c.JSON(jerr.Status, jerr)
-		return
+		return nil, jerr
 	}
 
 	// Request a new access token
-	response := ctrl.config.AccessToken(c)
+	response := svc.adapter.AccessToken(c)
 	response.State = c.State
-
-	// Disables HTTP caching on client and returns access token for client
-	disableCaching(c.Writer)
-	c.JSON(http.StatusOK, response)
+	return response, nil
 }
 
-func (ctrl *TokenController) passwordHandler(c *TokenContext) {
+func (svc *TokenService) passwordHandler(c *TokenContext,
+) (*TokenResponse, *Error) {
 	var jerr *Error
-	c.Client, jerr = ctrl.authClient(c, GrantTypePassword)
+	c.Client, jerr = svc.authClient(c, GrantTypePassword)
 	if jerr != nil {
-		c.JSON(jerr.Status, jerr)
-		return
+		return nil, jerr
 	}
 
 	// Validates user (resource owner) credentials
-	if !ctrl.config.User(c.Username, c.Password) {
+	if !svc.adapter.User(c.Username, c.Password) {
 		jerr := NewError().
 			InvalidUserCredentials(c.Username).
 			Build()
-		c.JSON(jerr.Status, jerr)
-		return
+		return nil, &jerr
 	}
 
 	// Request a new access token
-	response := ctrl.config.AccessToken(c)
+	response := svc.adapter.AccessToken(c)
 	response.State = c.State
-
-	// Disables HTTP caching on client and returns access token for client
-	disableCaching(c.Writer)
-	c.JSON(http.StatusOK, response)
+	return response, nil
 }
 
-func (ctrl *TokenController) refreshHandler(c *TokenContext) {
+func (svc *TokenService) refreshHandler(c *TokenContext,
+) (*TokenResponse, *Error) {
 	var jerr *Error
-	c.Client, jerr = ctrl.authClient(c, GrantTypeRefresh)
+	c.Client, jerr = svc.authClient(c, GrantTypeRefresh)
 	if jerr != nil {
-		c.JSON(jerr.Status, jerr)
-		return
+		return nil, jerr
 	}
 
 	// Validates refresh token
-	if !ctrl.config.Refresh(c) {
+	if !svc.adapter.Refresh(c) {
 		jerr := NewError().
 			InvalidRefreshToken().
 			Build()
-		c.JSON(jerr.Status, jerr)
-		return
+		return nil, &jerr
 	}
 
 	// Request a new access token
-	response := ctrl.config.AccessToken(c)
+	response := svc.adapter.AccessToken(c)
 	response.State = c.State
-
-	// Disables HTTP caching on client and returns access token for client
-	disableCaching(c.Writer)
-	c.JSON(http.StatusOK, response)
+	return response, nil
 }
 
-// AccessTokenRequest receives a request to token endpoint.
-func (ctrl *TokenController) AccessTokenRequest(c *gin.Context) {
-	context := NewTokenContext(c)
+// AccessTokenRequest receives a request to create a new access token.
+func (svc *TokenService) AccessTokenRequest(context *TokenContext,
+) (*TokenResponse, *Error) {
 	if !dot.
-		StringSlice(ctrl.config.SupportedGrantTypes).
+		StringSlice(svc.adapter.SupportedGrantTypes()).
 		Exists(context.GrantType, false) {
 		jerr := NewError().
 			UnsupportedGrantType().
 			Build()
-		c.JSON(jerr.Status, jerr)
-		return
+		return nil, &jerr
 	}
 
 	// Route requested grant type to its handler
 	switch context.GrantType {
 	case GrantTypeClient:
-		ctrl.clientHandler(context)
+		return svc.clientHandler(context)
 	case GrantTypePassword:
-		ctrl.passwordHandler(context)
+		return svc.passwordHandler(context)
 	case GrantTypeRefresh:
-		ctrl.refreshHandler(context)
+		return svc.refreshHandler(context)
 	default:
 		jerr := NewError().
 			UnsupportedGrantType().
 			Build()
-		c.JSON(jerr.Status, jerr)
+		return nil, &jerr
 	}
 }

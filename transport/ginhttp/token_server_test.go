@@ -1,4 +1,4 @@
-package oauth
+package ginhttp
 
 import (
 	"encoding/json"
@@ -8,63 +8,31 @@ import (
 	"net/url"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/raiqub/oauth"
 )
 
 const (
-	AccessToken      = "UB736gpbpFp7hS8dNrUFZ7b6Aw2a3N0LI8RRddWO"
 	ClientID         = "client_id"
 	ClientSecret     = "client_secret"
 	ListenerEndpoint = "/token"
-	Scope            = "user.read"
-	WaitTimeout      = time.Millisecond * 250
 )
 
 func TestClientGrant(t *testing.T) {
-	config := TokenConfig{
-		AccessToken: func(c *TokenContext) *TokenResponse {
-			resp := NewTokenResponse(
-				AccessToken,
-				"bearer",
-				3600,
-				"",
-				Scope,
-				"CudYQpuw",
-			)
-			return &resp
-		},
-		Client: func(clientID, clientSecret string) *ClientEntry {
-			if clientID != ClientID || clientSecret != ClientSecret {
-				return nil
-			}
+	srv := NewTokenServer(&FooAdapter{})
 
-			return &ClientEntry{
-				clientID,
-				clientSecret,
-				"public",
-				[]string{"http://client.example.com/callback"},
-				[]string{"http://client.example.com"},
-				[]string{GrantTypeClient},
-				[]string{Scope},
-			}
-		},
-		SupportedGrantTypes: []string{GrantTypeClient},
-	}
-
-	controller := NewTokenController(config)
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 	router.RedirectTrailingSlash = true
 
-	router.POST(ListenerEndpoint, controller.AccessTokenRequest)
+	router.POST(ListenerEndpoint, srv.AccessTokenRequest)
 	ts := httptest.NewServer(router)
 	defer ts.Close()
 
 	client := &http.Client{}
 	form := url.Values{
-		"grant_type": []string{GrantTypeClient},
+		"grant_type": []string{oauth.GrantTypeClient},
 		"scope":      []string{Scope},
 	}
 	req, _ := http.NewRequest("POST", ts.URL+ListenerEndpoint,
@@ -83,7 +51,7 @@ func TestClientGrant(t *testing.T) {
 		t.Fatalf("Response body: %s", string(strBody))
 	}
 
-	var response TokenResponse
+	var response oauth.TokenResponse
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		t.Fatalf("Error parsing response: %v", err)
 	}

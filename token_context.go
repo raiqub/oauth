@@ -16,35 +16,42 @@
 
 package oauth
 
-import (
-	"strings"
+import "strings"
 
-	"github.com/gin-gonic/gin"
+const (
+	// FormKeyGrantType defines the form's key name to define grant type.
+	FormKeyGrantType = "grant_type"
+
+	// FormKeyScope defines the form's key name to define client scopes.
+	FormKeyScope = "scope"
+
+	// FormKeyState defines the form's key name to define session nonce.
+	FormKeyState = "state"
+
+	// FormKeyUsername defines the form's key name to define user name.
+	FormKeyUsername = "username"
+
+	// FormKeyPassword defines the form's key name to define user password.
+	FormKeyPassword = "password"
 )
 
 // A TokenContext represents an object to pass variables between TokenHandler
 // and TokenProvider methods.
 type TokenContext struct {
-	*gin.Context
-	GrantType string
-	Client    *ClientEntry
-	Scope     string
-	State     string
-	Username  string
-	Password  string
+	GrantType  string
+	Client     *ClientEntry
+	Scope      string
+	State      string
+	Username   string
+	Password   string
+	Values     map[string]interface{}
+	ClientAuth *BasicAuth
 }
 
-// NewTokenContext creates a new instance of TokenContext.
-func NewTokenContext(c *gin.Context) *TokenContext {
-	return &TokenContext{
-		c,
-		c.PostForm("grant_type"),
-		nil,
-		c.PostForm("scope"),
-		c.PostForm("state"),
-		c.PostForm("username"),
-		c.PostForm("password"),
-	}
+// A BasicAuth represents an authentication thru HTTP basic authentication.
+type BasicAuth struct {
+	Username string
+	Password string
 }
 
 // ScopeList returns scope split by its spaces.
