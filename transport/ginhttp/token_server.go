@@ -22,7 +22,7 @@ func NewTokenServer(adapter oauth.TokenAdapter) *TokenServer {
 // AccessTokenRequest is a endpoint that receives a request to create a new
 // access token.
 func (s *TokenServer) AccessTokenRequest(c *gin.Context) {
-	context := NewTokenContext(c)
+	context := newTokenContext(c)
 	resp, jerr := s.svc.AccessTokenRequest(context)
 	if jerr != nil {
 		c.JSON(jerr.Status, jerr)
@@ -30,19 +30,19 @@ func (s *TokenServer) AccessTokenRequest(c *gin.Context) {
 	}
 
 	// Disables HTTP caching on client and returns access token for client
-	DisableCaching(c.Writer)
+	disableCaching(c.Writer)
 	c.JSON(http.StatusOK, *resp)
 }
 
 // DisableCaching disables HTTP caching on client.
-func DisableCaching(w http.ResponseWriter) {
+func disableCaching(w http.ResponseWriter) {
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("Pragma", "no-cache")
 }
 
 // NewTokenContext creates a new instance of TokenContext based on specified gin
 // context.
-func NewTokenContext(c *gin.Context) *oauth.TokenContext {
+func newTokenContext(c *gin.Context) *oauth.TokenContext {
 	var auth *oauth.BasicAuth
 	username, password, ok := c.Request.BasicAuth()
 	if ok {
