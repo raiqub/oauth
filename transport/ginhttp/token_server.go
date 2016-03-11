@@ -63,5 +63,7 @@ func newTokenContext(c *gin.Context) *oauth.TokenContext {
 		Password:     c.PostForm(oauth.FormKeyPassword),
 		RefreshToken: c.PostForm(oauth.FormKeyRefreshToken),
 		ClientAuth:   auth,
+		Client:       nil,
+		Values:       make(map[string]interface{}),
 	}
 }
