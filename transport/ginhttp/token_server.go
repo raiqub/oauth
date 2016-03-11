@@ -53,11 +53,15 @@ func newTokenContext(c *gin.Context) *oauth.TokenContext {
 	}
 
 	return &oauth.TokenContext{
-		GrantType:  c.PostForm(oauth.FormKeyGrantType),
-		Scope:      c.PostForm(oauth.FormKeyScope),
-		State:      c.PostForm(oauth.FormKeyState),
-		Username:   c.PostForm(oauth.FormKeyUsername),
-		Password:   c.PostForm(oauth.FormKeyPassword),
-		ClientAuth: auth,
+		GrantType:    c.PostForm(oauth.FormKeyGrantType),
+		Scope:        c.PostForm(oauth.FormKeyScope),
+		State:        c.PostForm(oauth.FormKeyState),
+		Code:         c.PostForm(oauth.FormKeyCode),
+		RedirectURI:  c.PostForm(oauth.FormKeyRedirect),
+		ClientID:     c.PostForm(oauth.FormClientID),
+		Username:     c.PostForm(oauth.FormKeyUsername),
+		Password:     c.PostForm(oauth.FormKeyPassword),
+		RefreshToken: c.PostForm(oauth.FormKeyRefreshToken),
+		ClientAuth:   auth,
 	}
 }

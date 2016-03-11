@@ -19,8 +19,24 @@ package oauth
 import "strings"
 
 const (
+	// FormClientID defines the form's key name to define client identifier.
+	FormClientID = "client_id"
+
+	// FormKeyCode defines the form's key name to define authorization code.
+	FormKeyCode = "code"
+
 	// FormKeyGrantType defines the form's key name to define grant type.
 	FormKeyGrantType = "grant_type"
+
+	// FormKeyPassword defines the form's key name to define user password.
+	FormKeyPassword = "password"
+
+	// FormKeyRedirect defines the form's key name to define redirection
+	// endpoint.
+	FormKeyRedirect = "redirect_uri"
+
+	// FormKeyRefreshToken defines the form's key name to define refresh token.
+	FormKeyRefreshToken = "refresh_token"
 
 	// FormKeyScope defines the form's key name to define client scopes.
 	FormKeyScope = "scope"
@@ -30,22 +46,37 @@ const (
 
 	// FormKeyUsername defines the form's key name to define user name.
 	FormKeyUsername = "username"
-
-	// FormKeyPassword defines the form's key name to define user password.
-	FormKeyPassword = "password"
 )
 
 // A TokenContext represents an object to pass variables between TokenHandler
 // and TokenProvider methods.
 type TokenContext struct {
-	GrantType  string
-	Client     *ClientEntry
-	Scope      string
-	State      string
-	Username   string
-	Password   string
-	Values     map[string]interface{}
+	// Common form fields
+
+	GrantType string
+	Scope     string
+	State     string
+
+	// Authorization Code Grant
+
+	Code        string
+	RedirectURI string
+	ClientID    string
+
+	// Resource Owner Password Credentials Grant
+
+	Username string
+	Password string
+
+	// Refresh Access Token
+
+	RefreshToken string
+
+	// Context parsed
+
 	ClientAuth *BasicAuth
+	Client     *ClientEntry
+	Values     map[string]interface{}
 }
 
 // A BasicAuth represents an authentication thru HTTP basic authentication.
