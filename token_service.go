@@ -61,11 +61,9 @@ func (svc *TokenService) authClient(
 			Build()
 		return nil, &jerr
 	}
-	clientID := c.ClientAuth.Username
-	clientSecret := c.ClientAuth.Password
 
 	// Validate client credentials
-	result := svc.adapter.Client(clientID, clientSecret)
+	result := svc.adapter.Client(c)
 	if result == nil {
 		jerr := NewError().
 			InvalidClientCredentials().
@@ -119,7 +117,7 @@ func (svc *TokenService) passwordHandler(c *TokenContext,
 	}
 
 	// Validates user (resource owner) credentials
-	if !svc.adapter.User(c.Username, c.Password) {
+	if !svc.adapter.User(c) {
 		jerr := NewError().
 			InvalidUserCredentials(c.Username).
 			Build()

@@ -10,7 +10,7 @@ type FooAdapter struct{}
 func (a *FooAdapter) AccessToken(c *TokenContext) *TokenResponse {
 	resp := NewTokenResponse(
 		AccessToken,
-		"bearer",
+		"Bearer",
 		3600,
 		"",
 		Scope,
@@ -19,14 +19,15 @@ func (a *FooAdapter) AccessToken(c *TokenContext) *TokenResponse {
 	return &resp
 }
 
-func (a *FooAdapter) Client(id, secret string) *ClientEntry {
-	if id != ClientID || secret != ClientSecret {
+func (a *FooAdapter) Client(c *TokenContext) *ClientEntry {
+	if c.ClientAuth.Username != ClientID ||
+		c.ClientAuth.Password != ClientSecret {
 		return nil
 	}
 
 	return &ClientEntry{
-		id,
-		secret,
+		ClientID,
+		ClientSecret,
 		"public",
 		[]string{"http://client.example.com/callback"},
 		[]string{"http://client.example.com"},
@@ -43,7 +44,7 @@ func (a *FooAdapter) SupportedGrantTypes() []string {
 	return []string{GrantTypeClient}
 }
 
-func (a *FooAdapter) User(string, string) bool {
+func (a *FooAdapter) User(*TokenContext) bool {
 	return false
 }
 

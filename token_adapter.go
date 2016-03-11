@@ -22,7 +22,7 @@ type TokenAdapter interface {
 	AccessToken(c *TokenContext) *TokenResponse
 
 	// Client gets the client information if valid.
-	Client(clientID, clientSecret string) *ClientEntry
+	Client(c *TokenContext) *ClientEntry
 
 	// Refresh validate provided refresh token.
 	Refresh(c *TokenContext) bool
@@ -31,5 +31,5 @@ type TokenAdapter interface {
 	SupportedGrantTypes() []string
 
 	// User validate resource owner credentials for password grant type.
-	User(username, password string) bool
+	User(c *TokenContext) bool
 }

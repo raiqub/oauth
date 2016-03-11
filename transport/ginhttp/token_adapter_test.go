@@ -21,14 +21,15 @@ func (a *FooAdapter) AccessToken(c *oauth.TokenContext) *oauth.TokenResponse {
 	return &resp
 }
 
-func (a *FooAdapter) Client(id, secret string) *oauth.ClientEntry {
-	if id != ClientID || secret != ClientSecret {
+func (a *FooAdapter) Client(c *oauth.TokenContext) *oauth.ClientEntry {
+	if c.ClientAuth.Username != ClientID ||
+		c.ClientAuth.Password != ClientSecret {
 		return nil
 	}
 
 	return &oauth.ClientEntry{
-		ClientID:          id,
-		ClientSecret:      secret,
+		ClientID:          ClientID,
+		ClientSecret:      ClientSecret,
 		ClientType:        "public",
 		RedirectUris:      []string{"http://client.example.com/callback"},
 		JavascriptOrigins: []string{"http://client.example.com"},
@@ -45,7 +46,7 @@ func (a *FooAdapter) SupportedGrantTypes() []string {
 	return []string{oauth.GrantTypeClient}
 }
 
-func (a *FooAdapter) User(string, string) bool {
+func (a *FooAdapter) User(*oauth.TokenContext) bool {
 	return false
 }
 
