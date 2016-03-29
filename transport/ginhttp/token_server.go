@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Fabrício Godoy
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package ginhttp
 
 import (
@@ -30,8 +46,12 @@ func (s *TokenServer) AccessTokenRequest(c *gin.Context) {
 	}
 
 	// Disables HTTP caching on client and returns access token for client
-	disableCaching(c.Writer)
-	c.JSON(http.StatusOK, *resp)
+	if resp != nil {
+		disableCaching(c.Writer)
+		c.JSON(http.StatusOK, *resp)
+	} else {
+		c.Status(http.StatusBadRequest)
+	}
 }
 
 // DisableCaching disables HTTP caching on client.
@@ -52,18 +72,41 @@ func newTokenContext(c *gin.Context) *oauth.TokenContext {
 		}
 	}
 
-	return &oauth.TokenContext{
-		GrantType:    c.PostForm(oauth.FormKeyGrantType),
-		Scope:        c.PostForm(oauth.FormKeyScope),
-		State:        c.PostForm(oauth.FormKeyState),
-		Code:         c.PostForm(oauth.FormKeyCode),
-		RedirectURI:  c.PostForm(oauth.FormKeyRedirect),
-		ClientID:     c.PostForm(oauth.FormClientID),
-		Username:     c.PostForm(oauth.FormKeyUsername),
-		Password:     c.PostForm(oauth.FormKeyPassword),
-		RefreshToken: c.PostForm(oauth.FormKeyRefreshToken),
-		ClientAuth:   auth,
-		Client:       nil,
-		Values:       make(map[string]interface{}),
+	tContext := &oauth.TokenContext{
+		ClientAuth: auth,
+		Client:     nil,
+		Values:     make(map[string]interface{}),
 	}
+
+	c.Request.ParseForm()
+	for k, v := range c.Request.PostForm {
+		if len(v) == 0 {
+			continue
+		}
+
+		switch k {
+		case oauth.FormClientID:
+			tContext.ClientID = v[0]
+		case oauth.FormKeyCode:
+			tContext.Code = v[0]
+		case oauth.FormKeyGrantType:
+			tContext.GrantType = v[0]
+		case oauth.FormKeyPassword:
+			tContext.Password = v[0]
+		case oauth.FormKeyRedirect:
+			tContext.RedirectURI = v[0]
+		case oauth.FormKeyRefreshToken:
+			tContext.RefreshToken = v[0]
+		case oauth.FormKeyScope:
+			tContext.Scope = v[0]
+		case oauth.FormKeyState:
+			tContext.State = v[0]
+		case oauth.FormKeyUsername:
+			tContext.Username = v[0]
+		default:
+			tContext.Values[k] = v
+		}
+	}
+
+	return tContext
 }

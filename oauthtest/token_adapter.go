@@ -1,12 +1,32 @@
+/*
+ * Copyright 2016 Fabrício Godoy
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package oauthtest
 
-import "github.com/raiqub/oauth"
+import (
+	"github.com/raiqub/oauth"
+	"gopkg.in/raiqub/dot.v1"
+)
 
 type TokenAdapter struct {
 	AccessToken  string
 	ClientID     string
 	ClientSecret string
 	Scope        string
+	CustomValues map[string][]string
 }
 
 func NewTokenAdapter() *TokenAdapter {
@@ -15,6 +35,7 @@ func NewTokenAdapter() *TokenAdapter {
 		"client_id",
 		"client_secret",
 		"user.read",
+		make(map[string][]string, 0),
 	}
 }
 
@@ -36,6 +57,24 @@ func (a *TokenAdapter) FindClient(c *oauth.TokenContext) *oauth.ClientEntry {
 }
 
 func (a *TokenAdapter) NewAccessToken(c *oauth.TokenContext) *oauth.TokenResponse {
+	for k, v := range a.CustomValues {
+		var ok bool
+		var rawVal interface{}
+		if rawVal, ok = c.Values[k]; !ok {
+			return nil
+		}
+
+		var v2 []string
+		if v2, ok = rawVal.([]string); !ok {
+			return nil
+		}
+
+		if !dot.StringSlice(v2).
+			ExistsAll(v, false) {
+			return nil
+		}
+	}
+
 	resp := oauth.NewTokenResponse(
 		a.AccessToken,
 		"bearer",

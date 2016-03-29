@@ -104,7 +104,10 @@ func (svc *TokenService) clientHandler(c *TokenContext,
 
 	// Request a new access token
 	response := svc.adapter.NewAccessToken(c)
-	response.State = c.State
+	if response != nil {
+		response.State = c.State
+	}
+
 	return response, nil
 }
 
@@ -126,7 +129,10 @@ func (svc *TokenService) passwordHandler(c *TokenContext,
 
 	// Request a new access token
 	response := svc.adapter.NewAccessToken(c)
-	response.State = c.State
+	if response != nil {
+		response.State = c.State
+	}
+
 	return response, nil
 }
 
@@ -148,7 +154,10 @@ func (svc *TokenService) refreshHandler(c *TokenContext,
 
 	// Request a new access token
 	response := svc.adapter.NewAccessToken(c)
-	response.State = c.State
+	if response != nil {
+		response.State = c.State
+	}
+
 	return response, nil
 }
 
