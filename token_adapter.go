@@ -18,18 +18,18 @@ package oauth
 
 // A TokenAdapter provides an adapter for token management.
 type TokenAdapter interface {
-	// AccessToken creates and returns a new access token.
-	AccessToken(c *TokenContext) *TokenResponse
+	// FindClient gets the client information if valid.
+	FindClient(c *TokenContext) *ClientEntry
 
-	// Client gets the client information if valid.
-	Client(c *TokenContext) *ClientEntry
-
-	// Refresh validate provided refresh token.
-	Refresh(c *TokenContext) bool
+	// NewAccessToken creates and returns a new access token.
+	NewAccessToken(c *TokenContext) *TokenResponse
 
 	// SupportedGrantTypes gets a list of supported grant types.
 	SupportedGrantTypes() []string
 
+	// Refresh validate provided refresh token.
+	ValidateRefresh(c *TokenContext) bool
+
 	// User validate resource owner credentials for password grant type.
-	User(c *TokenContext) bool
+	ValidateUser(c *TokenContext) bool
 }

@@ -11,16 +11,16 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/raiqub/oauth"
+	"github.com/raiqub/oauth/oauthtest"
 )
 
 const (
-	ClientID         = "client_id"
-	ClientSecret     = "client_secret"
 	ListenerEndpoint = "/token"
 )
 
 func TestClientGrant(t *testing.T) {
-	srv := NewTokenServer(&FooAdapter{})
+	adapter := oauthtest.NewTokenAdapter()
+	srv := NewTokenServer(adapter)
 
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
@@ -33,11 +33,11 @@ func TestClientGrant(t *testing.T) {
 	client := &http.Client{}
 	form := url.Values{
 		"grant_type": []string{oauth.GrantTypeClient},
-		"scope":      []string{Scope},
+		"scope":      []string{adapter.Scope},
 	}
 	req, _ := http.NewRequest("POST", ts.URL+ListenerEndpoint,
 		strings.NewReader(form.Encode()))
-	req.SetBasicAuth(ClientID, ClientSecret)
+	req.SetBasicAuth(adapter.ClientID, adapter.ClientSecret)
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	resp, err := client.Do(req)
 	if err != nil {
@@ -56,7 +56,7 @@ func TestClientGrant(t *testing.T) {
 		t.Fatalf("Error parsing response: %v", err)
 	}
 
-	if response.AccessToken != AccessToken {
+	if response.AccessToken != adapter.AccessToken {
 		t.Fatalf("Unexpected response: %#v", response)
 	}
 }

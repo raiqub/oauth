@@ -1,22 +1,22 @@
-package oauth
+package oauth_test
 
-import "testing"
+import (
+	"testing"
 
-const (
-	ClientID     = "client_id"
-	ClientSecret = "client_secret"
+	"github.com/raiqub/oauth"
+	"github.com/raiqub/oauth/oauthtest"
 )
 
 func TestClientGrant(t *testing.T) {
-	adapter := &FooAdapter{}
-	svc := NewTokenService(adapter)
+	adapter := oauthtest.NewTokenAdapter()
+	svc := oauth.NewTokenService(adapter)
 
-	context := TokenContext{
-		GrantType: GrantTypeClient,
-		Scope:     Scope,
-		ClientAuth: &BasicAuth{
-			Username: ClientID,
-			Password: ClientSecret,
+	context := oauth.TokenContext{
+		GrantType: oauth.GrantTypeClient,
+		Scope:     adapter.Scope,
+		ClientAuth: &oauth.BasicAuth{
+			Username: adapter.ClientID,
+			Password: adapter.ClientSecret,
 		},
 	}
 	resp, jerr := svc.AccessTokenRequest(&context)
@@ -24,7 +24,7 @@ func TestClientGrant(t *testing.T) {
 		t.Fatalf("Error trying to get client grant: %v", jerr.Description)
 	}
 
-	if resp.AccessToken != AccessToken {
+	if resp.AccessToken != adapter.AccessToken {
 		t.Errorf("Unexpected access token: %s", resp.AccessToken)
 	}
 }

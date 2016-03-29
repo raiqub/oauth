@@ -63,7 +63,7 @@ func (svc *TokenService) authClient(
 	}
 
 	// Validate client credentials
-	result := svc.adapter.Client(c)
+	result := svc.adapter.FindClient(c)
 	if result == nil {
 		jerr := NewError().
 			InvalidClientCredentials().
@@ -103,7 +103,7 @@ func (svc *TokenService) clientHandler(c *TokenContext,
 	}
 
 	// Request a new access token
-	response := svc.adapter.AccessToken(c)
+	response := svc.adapter.NewAccessToken(c)
 	response.State = c.State
 	return response, nil
 }
@@ -117,7 +117,7 @@ func (svc *TokenService) passwordHandler(c *TokenContext,
 	}
 
 	// Validates user (resource owner) credentials
-	if !svc.adapter.User(c) {
+	if !svc.adapter.ValidateUser(c) {
 		jerr := NewError().
 			InvalidUserCredentials(c.Username).
 			Build()
@@ -125,7 +125,7 @@ func (svc *TokenService) passwordHandler(c *TokenContext,
 	}
 
 	// Request a new access token
-	response := svc.adapter.AccessToken(c)
+	response := svc.adapter.NewAccessToken(c)
 	response.State = c.State
 	return response, nil
 }
@@ -139,7 +139,7 @@ func (svc *TokenService) refreshHandler(c *TokenContext,
 	}
 
 	// Validates refresh token
-	if !svc.adapter.Refresh(c) {
+	if !svc.adapter.ValidateRefresh(c) {
 		jerr := NewError().
 			InvalidRefreshToken().
 			Build()
@@ -147,7 +147,7 @@ func (svc *TokenService) refreshHandler(c *TokenContext,
 	}
 
 	// Request a new access token
-	response := svc.adapter.AccessToken(c)
+	response := svc.adapter.NewAccessToken(c)
 	response.State = c.State
 	return response, nil
 }
