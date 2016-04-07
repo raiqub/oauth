@@ -14,13 +14,13 @@ an implementation of OAuth 2.0 features.
 To install raiqub/oauth library run the following command:
 
 ~~~ bash
-go get gopkg.in/raiqub/oauth.v0
+go get gopkg.in/raiqub/oauth.v1
 ~~~
 
 To import this package, add the following line to your code:
 
 ~~~ bash
-import "gopkg.in/raiqub/auth.v0"
+import "gopkg.in/raiqub/oauth.v1"
 ~~~
 
 ## License

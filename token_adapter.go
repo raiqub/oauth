@@ -27,9 +27,9 @@ type TokenAdapter interface {
 	// SupportedGrantTypes gets a list of supported grant types.
 	SupportedGrantTypes() []string
 
-	// Refresh validate provided refresh token.
+	// ValidateRefresh validate provided refresh token.
 	ValidateRefresh(c *TokenContext) bool
 
-	// User validate resource owner credentials for password grant type.
+	// ValidateUser validate resource owner credentials for password grant type.
 	ValidateUser(c *TokenContext) bool
 }

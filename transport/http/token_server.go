@@ -19,20 +19,24 @@ package http
 import (
 	"net/http"
 
-	"github.com/raiqub/oauth"
+	"gopkg.in/raiqub/oauth.v1"
 	"gopkg.in/raiqub/web.v0"
 )
 
+// A TokenServer represents a HTTP server for TokenService.
 type TokenServer struct {
 	svc *oauth.TokenService
 }
 
+// NewTokenServer creates a new instance of TokenServer.
 func NewTokenServer(adapter oauth.TokenAdapter) *TokenServer {
 	return &TokenServer{
 		oauth.NewTokenService(adapter),
 	}
 }
 
+// AccessTokenRequest is a endpoint that receives a request to create a new
+// access token.
 func (srv *TokenServer) AccessTokenRequest(
 	w http.ResponseWriter,
 	r *http.Request,

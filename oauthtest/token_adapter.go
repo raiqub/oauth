@@ -17,8 +17,8 @@
 package oauthtest
 
 import (
-	"github.com/raiqub/oauth"
 	"gopkg.in/raiqub/dot.v1"
+	"gopkg.in/raiqub/oauth.v1"
 )
 
 // A TokenAdapter is an implementation of TokenAdapter interface for testing
@@ -60,6 +60,7 @@ func (a *TokenAdapter) FindClient(c *oauth.TokenContext) *oauth.ClientEntry {
 	}
 }
 
+// NewAccessToken creates and returns a new access token.
 func (a *TokenAdapter) NewAccessToken(c *oauth.TokenContext) *oauth.TokenResponse {
 	for k, v := range a.CustomValues {
 		var ok bool
@@ -90,14 +91,17 @@ func (a *TokenAdapter) NewAccessToken(c *oauth.TokenContext) *oauth.TokenRespons
 	return &resp
 }
 
+// SupportedGrantTypes gets a list of supported grant types.
 func (a *TokenAdapter) SupportedGrantTypes() []string {
 	return []string{oauth.GrantTypeClient}
 }
 
+// ValidateRefresh validate provided refresh token.
 func (a *TokenAdapter) ValidateRefresh(*oauth.TokenContext) bool {
 	return false
 }
 
+// ValidateUser validate resource owner credentials for password grant type.
 func (a *TokenAdapter) ValidateUser(*oauth.TokenContext) bool {
 	return false
 }

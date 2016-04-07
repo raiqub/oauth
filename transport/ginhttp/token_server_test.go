@@ -26,8 +26,8 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/raiqub/oauth"
-	"github.com/raiqub/oauth/oauthtest"
+	"gopkg.in/raiqub/oauth.v1"
+	"gopkg.in/raiqub/oauth.v1/oauthtest"
 )
 
 const (

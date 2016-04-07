@@ -19,7 +19,7 @@ package http
 import (
 	"net/http"
 
-	"github.com/raiqub/oauth"
+	"gopkg.in/raiqub/oauth.v1"
 )
 
 // DisableCaching disables HTTP caching on client.

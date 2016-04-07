@@ -20,8 +20,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/raiqub/oauth"
-	httptransport "github.com/raiqub/oauth/transport/http"
+	"gopkg.in/raiqub/oauth.v1"
+	httptransport "gopkg.in/raiqub/oauth.v1/transport/http"
 )
 
 // A TokenServer represents a gin-backed HTTP server for TokenService.
