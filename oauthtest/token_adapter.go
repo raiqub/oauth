@@ -21,6 +21,8 @@ import (
 	"gopkg.in/raiqub/dot.v1"
 )
 
+// A TokenAdapter is an implementation of TokenAdapter interface for testing
+// purposes.
 type TokenAdapter struct {
 	AccessToken  string
 	ClientID     string
@@ -29,6 +31,7 @@ type TokenAdapter struct {
 	CustomValues map[string][]string
 }
 
+// NewTokenAdapter creates a new instance of TokenAdapter.
 func NewTokenAdapter() *TokenAdapter {
 	return &TokenAdapter{
 		"UB736gpbpFp7hS8dNrUFZ7b6Aw2a3N0LI8RRddWO",
@@ -39,6 +42,7 @@ func NewTokenAdapter() *TokenAdapter {
 	}
 }
 
+// FindClient gets the client information if valid.
 func (a *TokenAdapter) FindClient(c *oauth.TokenContext) *oauth.ClientEntry {
 	if c.ClientAuth.Username != a.ClientID ||
 		c.ClientAuth.Password != a.ClientSecret {

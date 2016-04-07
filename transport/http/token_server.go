@@ -14,43 +14,40 @@
  * limitations under the License.
  */
 
-package ginhttp
+package http
 
 import (
 	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"github.com/raiqub/oauth"
-	httptransport "github.com/raiqub/oauth/transport/http"
+	"gopkg.in/raiqub/web.v0"
 )
 
-// A TokenServer represents a gin-backed HTTP server for TokenService.
 type TokenServer struct {
 	svc *oauth.TokenService
 }
 
-// NewTokenServer creates a new instance of TokenServer.
 func NewTokenServer(adapter oauth.TokenAdapter) *TokenServer {
 	return &TokenServer{
 		oauth.NewTokenService(adapter),
 	}
 }
 
-// AccessTokenRequest is a endpoint that receives a request to create a new
-// access token.
-func (s *TokenServer) AccessTokenRequest(c *gin.Context) {
-	context := httptransport.NewTokenContext(c.Request)
-	resp, jerr := s.svc.AccessTokenRequest(context)
+func (srv *TokenServer) AccessTokenRequest(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	context := NewTokenContext(r)
+	resp, jerr := srv.svc.AccessTokenRequest(context)
 	if jerr != nil {
-		c.JSON(jerr.Status, jerr)
+		web.JSONWrite(w, jerr.Status, jerr)
 		return
 	}
 
-	// Disables HTTP caching on client and returns access token for client
 	if resp != nil {
-		httptransport.DisableCaching(c.Writer)
-		c.JSON(http.StatusOK, *resp)
+		DisableCaching(w)
+		web.JSONWrite(w, http.StatusOK, *resp)
 	} else {
-		c.Status(http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
 	}
 }
