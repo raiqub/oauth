@@ -6,7 +6,6 @@ an implementation of OAuth 2.0 features.
 ## Status
 
 [![Build Status](https://travis-ci.org/raiqub/oauth.svg?branch=master)](https://travis-ci.org/raiqub/oauth)
-[![Coverage Status](https://coveralls.io/repos/raiqub/oauth/badge.svg?branch=master&service=github)](https://coveralls.io/github/raiqub/oauth?branch=master)
 [![GoDoc](https://godoc.org/github.com/raiqub/oauth?status.svg)](http://godoc.org/github.com/raiqub/oauth)
 
 ## Installation

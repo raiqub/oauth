@@ -19,7 +19,6 @@ before_script:
 
 script:
   - go test -v --race ./...
-  - goveralls -service=travis-ci -repotoken $COVERALLS_TOKEN
   - test -z "$(gofmt -s -l -w . | tee /dev/stderr)"
   - test -z "$(golint ./... | tee /dev/stderr)"
   - go vet ./...
