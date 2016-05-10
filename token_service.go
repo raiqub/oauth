@@ -16,7 +16,7 @@
 
 package oauth
 
-import "gopkg.in/raiqub/dot.v1"
+import "gopkg.in/raiqub/slice.v1"
 
 const (
 	// GrantTypeClient defines the code for Client Credentials Grant
@@ -72,8 +72,7 @@ func (svc *TokenService) authClient(
 	}
 
 	// Validates whether requested scopes is allowed
-	if !dot.
-		StringSlice(result.AllowedScopes).
+	if !slice.String(result.AllowedScopes).
 		ExistsAll(c.ScopeList(), false) {
 		jerr := NewError().
 			InvalidScope().
@@ -82,8 +81,7 @@ func (svc *TokenService) authClient(
 	}
 
 	// Validates whether requested grant type is allowed
-	if !dot.
-		StringSlice(result.AllowedGrants).
+	if !slice.String(result.AllowedGrants).
 		Exists(grant, false) {
 		jerr := NewError().
 			UnauthorizedClient().
@@ -164,8 +162,7 @@ func (svc *TokenService) refreshHandler(c *TokenContext,
 // AccessTokenRequest receives a request to create a new access token.
 func (svc *TokenService) AccessTokenRequest(context *TokenContext,
 ) (*TokenResponse, *Error) {
-	if !dot.
-		StringSlice(svc.adapter.SupportedGrantTypes()).
+	if !slice.String(svc.adapter.SupportedGrantTypes()).
 		Exists(context.GrantType, false) {
 		jerr := NewError().
 			UnsupportedGrantType().

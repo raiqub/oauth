@@ -17,8 +17,8 @@
 package oauthtest
 
 import (
-	"gopkg.in/raiqub/dot.v1"
 	"gopkg.in/raiqub/oauth.v1"
+	"gopkg.in/raiqub/slice.v1"
 )
 
 // A TokenAdapter is an implementation of TokenAdapter interface for testing
@@ -74,7 +74,7 @@ func (a *TokenAdapter) NewAccessToken(c *oauth.TokenContext) *oauth.TokenRespons
 			return nil
 		}
 
-		if !dot.StringSlice(v2).
+		if !slice.String(v2).
 			ExistsAll(v, false) {
 			return nil
 		}
