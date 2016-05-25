@@ -16,17 +16,22 @@
 
 package oauth
 
-// A TokenAdapter provides an adapter for token management.
-type TokenAdapter interface {
-	// FindClient gets the client information if valid.
-	FindClient(c *TokenContext) *ClientEntry
+// GrantTypeClient defines the code for Client Credentials Grant
+// authentication.
+const GrantTypeClient = "client_credentials"
 
-	// NewAccessToken creates and returns a new access token.
-	NewAccessToken(c *TokenContext) *TokenResponse
+func HandlerClient(adapter TokenAdapter, c *TokenContext) (*TokenResponse, *Error) {
+	var jerr *Error
+	c.Client, jerr = AuthClient(adapter, c)
+	if jerr != nil {
+		return nil, jerr
+	}
 
-	// ValidateRefresh validate provided refresh token.
-	ValidateRefresh(c *TokenContext) bool
+	// Request a new access token
+	response := adapter.NewAccessToken(c)
+	if response != nil {
+		response.State = c.State
+	}
 
-	// ValidateUser validate resource owner credentials for password grant type.
-	ValidateUser(c *TokenContext) bool
+	return response, nil
 }

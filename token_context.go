@@ -74,15 +74,10 @@ type TokenContext struct {
 
 	// Context parsed
 
-	ClientAuth *BasicAuth
+	HTTPUser   string
+	HTTPSecret string
 	Client     *ClientEntry
 	Values     map[string]interface{}
-}
-
-// A BasicAuth represents an authentication thru HTTP basic authentication.
-type BasicAuth struct {
-	Username string
-	Password string
 }
 
 // ScopeList returns scope split by its spaces.

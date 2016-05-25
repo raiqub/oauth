@@ -16,17 +16,6 @@
 
 package oauth
 
-// A TokenAdapter provides an adapter for token management.
-type TokenAdapter interface {
-	// FindClient gets the client information if valid.
-	FindClient(c *TokenContext) *ClientEntry
-
-	// NewAccessToken creates and returns a new access token.
-	NewAccessToken(c *TokenContext) *TokenResponse
-
-	// ValidateRefresh validate provided refresh token.
-	ValidateRefresh(c *TokenContext) bool
-
-	// ValidateUser validate resource owner credentials for password grant type.
-	ValidateUser(c *TokenContext) bool
-}
+// GrantTypeCode defines the code for Authorization Code Grant
+// authentication.
+const GrantTypeCode = "authorization_code"
