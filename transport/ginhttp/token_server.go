@@ -26,13 +26,13 @@ import (
 
 // A TokenServer represents a gin-backed HTTP server for TokenService.
 type TokenServer struct {
-	svc *oauth.TokenService
+	svcToken *oauth.TokenService
 }
 
 // NewTokenServer creates a new instance of TokenServer.
-func NewTokenServer(adapter oauth.TokenAdapter, grantTypes ...string) *TokenServer {
+func NewTokenServer(svcToken *oauth.TokenService) *TokenServer {
 	return &TokenServer{
-		oauth.NewTokenService(adapter, grantTypes...),
+		svcToken,
 	}
 }
 
@@ -40,7 +40,7 @@ func NewTokenServer(adapter oauth.TokenAdapter, grantTypes ...string) *TokenServ
 // access token.
 func (s *TokenServer) AccessTokenRequest(c *gin.Context) {
 	context := httptransport.NewTokenContext(c.Request)
-	resp, jerr := s.svc.AccessTokenRequest(context)
+	resp, jerr := s.svcToken.AccessTokenRequest(context)
 	if jerr != nil {
 		c.JSON(jerr.Status, jerr)
 		return
@@ -57,5 +57,5 @@ func (s *TokenServer) AccessTokenRequest(c *gin.Context) {
 
 // SetHandler register a new handler for specified grant type.
 func (s *TokenServer) SetHandler(grantType string, handler oauth.TokenHandlerFunc) {
-	s.svc.SetHandler(grantType, handler)
+	s.svcToken.SetHandler(grantType, handler)
 }

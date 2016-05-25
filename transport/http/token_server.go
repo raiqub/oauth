@@ -25,13 +25,13 @@ import (
 
 // A TokenServer represents a HTTP server for TokenService.
 type TokenServer struct {
-	svc *oauth.TokenService
+	svcToken *oauth.TokenService
 }
 
 // NewTokenServer creates a new instance of TokenServer.
-func NewTokenServer(adapter oauth.TokenAdapter, grantTypes ...string) *TokenServer {
+func NewTokenServer(svcToken *oauth.TokenService) *TokenServer {
 	return &TokenServer{
-		oauth.NewTokenService(adapter, grantTypes...),
+		svcToken,
 	}
 }
 
@@ -42,7 +42,7 @@ func (srv *TokenServer) AccessTokenRequest(
 	r *http.Request,
 ) {
 	context := NewTokenContext(r)
-	resp, jerr := srv.svc.AccessTokenRequest(context)
+	resp, jerr := srv.svcToken.AccessTokenRequest(context)
 	if jerr != nil {
 		web.JSONWrite(w, jerr.Status, jerr)
 		return
@@ -58,5 +58,5 @@ func (srv *TokenServer) AccessTokenRequest(
 
 // SetHandler register a new handler for specified grant type.
 func (srv *TokenServer) SetHandler(grantType string, handler oauth.TokenHandlerFunc) {
-	srv.svc.SetHandler(grantType, handler)
+	srv.svcToken.SetHandler(grantType, handler)
 }

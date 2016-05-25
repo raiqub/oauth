@@ -106,10 +106,10 @@ import (
 	httptransport "gopkg.in/raiqub/oauth.v2/transport/http"
 )
 
-adapter := NewMyAdapter()
-srvToken := httptransport.NewTokenServer(adapter,
+svcToken := oauth.NewTokenService(NewMyAdapter(),
 	// Accepts client_credentials and refresh_token
 	oauth.GrantTypeClient, oauth.GrantTypeRefresh)
+srvToken := httptransport.NewTokenServer(svcToken)
 
 http.HandleFunc("/token", srvToken.AccessTokenRequest)
 http.ListenAndServe(":8080", nil)
@@ -127,7 +127,7 @@ func MyHandler(adapter oauth.TokenAdapter, c *oauth.TokenContext,
 	// Validates client authentication and authorization
 	var oerr *oauth.Error
 	c.Client, oerr = oauth.AuthClient(adapter, c)
-	if jerr != nil {
+	if oerr != nil {
 		return nil, oerr
 	}
 	
@@ -143,14 +143,14 @@ import (
 	httptransport "gopkg.in/raiqub/oauth.v2/transport/http"
 )
 
-adapter := NewMyAdapter()
-srvToken := httptransport.NewTokenServer(adapter,
+svcToken := oauth.NewTokenService(NewMyAdapter(),
 	// Accepts client_credentials and refresh_token
 	oauth.GrantTypeClient, oauth.GrantTypeRefresh)
 
 // Adds a custom handler
 srvToken.SetHandler("urn:custom:myhandler", MyHandler)
 
+srvToken := httptransport.NewTokenServer(svcToken)
 http.HandleFunc("/token", srvToken.AccessTokenRequest)
 http.ListenAndServe(":8080", nil)
 ```

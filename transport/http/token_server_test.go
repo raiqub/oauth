@@ -36,7 +36,8 @@ const (
 
 func TestClientGrant(t *testing.T) {
 	adapter := oauthtest.NewTokenAdapter()
-	srv := NewTokenServer(adapter, oauth.GrantTypeClient)
+	svc := oauth.NewTokenService(adapter, oauth.GrantTypeClient)
+	srv := NewTokenServer(svc)
 	adapter.CustomValues[FormKeyCustom] = []string{FormValueCustom}
 
 	ts := httptest.NewServer(http.HandlerFunc(srv.AccessTokenRequest))
