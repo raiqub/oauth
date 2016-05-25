@@ -20,6 +20,7 @@ package oauth
 // Credentials Grant authentication.
 const GrantTypePassword = "password"
 
+// HandlerPassword handles Resource Owner Password Credentials Grant for TokenService.
 func HandlerPassword(adapter TokenAdapter, c *TokenContext) (*TokenResponse, *Error) {
 	var jerr *Error
 	c.Client, jerr = AuthClient(adapter, c)

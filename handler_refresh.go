@@ -20,6 +20,7 @@ package oauth
 // authentication.
 const GrantTypeRefresh = "refresh_token"
 
+// HandlerRefresh handles Refresh Access Token for TokenService.
 func HandlerRefresh(adapter TokenAdapter, c *TokenContext) (*TokenResponse, *Error) {
 	var jerr *Error
 	c.Client, jerr = AuthClient(adapter, c)

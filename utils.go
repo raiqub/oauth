@@ -18,6 +18,7 @@ package oauth
 
 import "gopkg.in/raiqub/slice.v1"
 
+// AuthClient validates client authentication and authorization.
 func AuthClient(adapter TokenAdapter, c *TokenContext,
 ) (*ClientEntry, *Error) {
 	// Get client credentials

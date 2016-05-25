@@ -62,7 +62,7 @@ func (svc *TokenService) AccessTokenRequest(context *TokenContext,
 	return handler(svc.adapter, context)
 }
 
-// AddHandler register a new handler for specified grant type.
+// SetHandler register a new handler for specified grant type.
 func (svc *TokenService) SetHandler(grantType string, handler TokenHandlerFunc) {
 	if handler == nil {
 		delete(svc.handlers, grantType)

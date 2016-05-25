@@ -20,6 +20,7 @@ package oauth
 // authentication.
 const GrantTypeClient = "client_credentials"
 
+// HandlerClient handles Client Credential Grant for TokenService.
 func HandlerClient(adapter TokenAdapter, c *TokenContext) (*TokenResponse, *Error) {
 	var jerr *Error
 	c.Client, jerr = AuthClient(adapter, c)
