@@ -19,21 +19,19 @@ package oauth_test
 import (
 	"testing"
 
-	"gopkg.in/raiqub/oauth.v1"
-	"gopkg.in/raiqub/oauth.v1/oauthtest"
+	"gopkg.in/raiqub/oauth.v2"
+	"gopkg.in/raiqub/oauth.v2/oauthtest"
 )
 
 func TestClientGrant(t *testing.T) {
 	adapter := oauthtest.NewTokenAdapter()
-	svc := oauth.NewTokenService(adapter)
+	svc := oauth.NewTokenService(adapter, oauth.GrantTypeClient)
 
 	context := oauth.TokenContext{
-		GrantType: oauth.GrantTypeClient,
-		Scope:     adapter.Scope,
-		ClientAuth: &oauth.BasicAuth{
-			Username: adapter.ClientID,
-			Password: adapter.ClientSecret,
-		},
+		GrantType:  oauth.GrantTypeClient,
+		Scope:      adapter.Scope,
+		HTTPUser:   adapter.ClientID,
+		HTTPSecret: adapter.ClientSecret,
 	}
 	resp, jerr := svc.AccessTokenRequest(&context)
 	if jerr != nil {

@@ -25,7 +25,8 @@ type TokenService struct {
 	adapter  TokenAdapter
 }
 
-// NewTokenService creates a new instance of TokenService.
+// NewTokenService creates a new instance of TokenService and pre-loads specified
+// handlers.
 func NewTokenService(ta TokenAdapter, grantTypes ...string) *TokenService {
 	tService := TokenService{
 		make(map[string]TokenHandlerFunc),
