@@ -16,6 +16,9 @@
 
 package oauth
 
+// BearerTokenType defines the token type for Bearer usage (RFC 6750).
+const BearerTokenType = "Bearer"
+
 type (
 	// A ClientEntry represents a record for client credentials and
 	// authorizations.
