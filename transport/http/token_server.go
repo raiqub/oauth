@@ -19,7 +19,7 @@ package http
 import (
 	"net/http"
 
-	"gopkg.in/raiqub/oauth.v1"
+	"gopkg.in/raiqub/oauth.v2"
 	"gopkg.in/raiqub/web.v0"
 )
 
@@ -29,9 +29,9 @@ type TokenServer struct {
 }
 
 // NewTokenServer creates a new instance of TokenServer.
-func NewTokenServer(adapter oauth.TokenAdapter) *TokenServer {
+func NewTokenServer(adapter oauth.TokenAdapter, grantTypes ...string) *TokenServer {
 	return &TokenServer{
-		oauth.NewTokenService(adapter),
+		oauth.NewTokenService(adapter, grantTypes...),
 	}
 }
 
@@ -54,4 +54,9 @@ func (srv *TokenServer) AccessTokenRequest(
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
 	}
+}
+
+// SetHandler register a new handler for specified grant type.
+func (srv *TokenServer) SetHandler(grantType string, handler oauth.TokenHandlerFunc) {
+	srv.svc.SetHandler(grantType, handler)
 }

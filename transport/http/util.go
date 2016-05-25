@@ -19,7 +19,7 @@ package http
 import (
 	"net/http"
 
-	"gopkg.in/raiqub/oauth.v1"
+	"gopkg.in/raiqub/oauth.v2"
 )
 
 // DisableCaching disables HTTP caching on client.
@@ -31,20 +31,12 @@ func DisableCaching(w http.ResponseWriter) {
 // NewTokenContext creates a new instance of TokenContext based on specified gin
 // context.
 func NewTokenContext(req *http.Request) *oauth.TokenContext {
-	var auth *oauth.BasicAuth
-	username, password, ok := req.BasicAuth()
-	if ok {
-		auth = &oauth.BasicAuth{
-			Username: username,
-			Password: password,
-		}
+	tContext := oauth.TokenContext{
+		Client: nil,
+		Values: make(map[string]interface{}),
 	}
 
-	tContext := &oauth.TokenContext{
-		ClientAuth: auth,
-		Client:     nil,
-		Values:     make(map[string]interface{}),
-	}
+	tContext.HTTPUser, tContext.HTTPSecret, _ = req.BasicAuth()
 
 	req.ParseForm()
 	for k, v := range req.PostForm {
@@ -76,5 +68,5 @@ func NewTokenContext(req *http.Request) *oauth.TokenContext {
 		}
 	}
 
-	return tContext
+	return &tContext
 }
