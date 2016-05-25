@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+//go:generate ffjson $GOFILE
+
 package oauth
 
 // BearerTokenType defines the token type for Bearer usage (RFC 6750).

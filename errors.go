@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+//go:generate ffjson $GOFILE
+
 package oauth
 
 import "fmt"
