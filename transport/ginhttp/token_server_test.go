@@ -26,8 +26,8 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"gopkg.in/raiqub/oauth.v1"
-	"gopkg.in/raiqub/oauth.v1/oauthtest"
+	"gopkg.in/raiqub/oauth.v2"
+	"gopkg.in/raiqub/oauth.v2/oauthtest"
 )
 
 const (
@@ -38,7 +38,7 @@ const (
 
 func TestClientGrant(t *testing.T) {
 	adapter := oauthtest.NewTokenAdapter()
-	srv := NewTokenServer(adapter)
+	srv := NewTokenServer(adapter, oauth.GrantTypeClient)
 	adapter.CustomValues[FormKeyCustom] = []string{FormValueCustom}
 
 	gin.SetMode(gin.ReleaseMode)

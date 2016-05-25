@@ -20,8 +20,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"gopkg.in/raiqub/oauth.v1"
-	httptransport "gopkg.in/raiqub/oauth.v1/transport/http"
+	"gopkg.in/raiqub/oauth.v2"
+	httptransport "gopkg.in/raiqub/oauth.v2/transport/http"
 )
 
 // A TokenServer represents a gin-backed HTTP server for TokenService.
@@ -30,9 +30,9 @@ type TokenServer struct {
 }
 
 // NewTokenServer creates a new instance of TokenServer.
-func NewTokenServer(adapter oauth.TokenAdapter) *TokenServer {
+func NewTokenServer(adapter oauth.TokenAdapter, grantTypes ...string) *TokenServer {
 	return &TokenServer{
-		oauth.NewTokenService(adapter),
+		oauth.NewTokenService(adapter, grantTypes...),
 	}
 }
 
@@ -53,4 +53,9 @@ func (s *TokenServer) AccessTokenRequest(c *gin.Context) {
 	} else {
 		c.Status(http.StatusBadRequest)
 	}
+}
+
+// SetHandler register a new handler for specified grant type.
+func (s *TokenServer) SetHandler(grantType string, handler oauth.TokenHandlerFunc) {
+	s.svc.SetHandler(grantType, handler)
 }
