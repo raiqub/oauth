@@ -17,7 +17,7 @@
 package oauthtest
 
 import (
-	"gopkg.in/raiqub/oauth.v1"
+	"gopkg.in/raiqub/oauth.v2"
 	"gopkg.in/raiqub/slice.v1"
 )
 
@@ -44,8 +44,8 @@ func NewTokenAdapter() *TokenAdapter {
 
 // FindClient gets the client information if valid.
 func (a *TokenAdapter) FindClient(c *oauth.TokenContext) *oauth.ClientEntry {
-	if c.ClientAuth.Username != a.ClientID ||
-		c.ClientAuth.Password != a.ClientSecret {
+	if c.HTTPUser != a.ClientID ||
+		c.HTTPSecret != a.ClientSecret {
 		return nil
 	}
 
@@ -89,11 +89,6 @@ func (a *TokenAdapter) NewAccessToken(c *oauth.TokenContext) *oauth.TokenRespons
 		"CudYQpuw",
 	)
 	return &resp
-}
-
-// SupportedGrantTypes gets a list of supported grant types.
-func (a *TokenAdapter) SupportedGrantTypes() []string {
-	return []string{oauth.GrantTypeClient}
 }
 
 // ValidateRefresh validate provided refresh token.
